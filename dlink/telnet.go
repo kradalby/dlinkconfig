@@ -1,7 +1,7 @@
 package dlink
 
 import (
-	"fmt"
+	// "fmt"
 	"log"
 	// "os"
 	"time"
@@ -35,13 +35,13 @@ func (t *Telnet) CheckErr(err error) {
 }
 
 func (t *Telnet) Expect(d ...string) {
-	fmt.Println("Expecting: ", d)
+	// fmt.Println("Expecting: ", d)
 	t.CheckErr(t.connection.SetReadDeadline(time.Now().Add(timeout)))
 	t.CheckErr(t.connection.SkipUntil(d...))
 }
 
 func (t *Telnet) Sendln(s string) {
-	fmt.Println("Sending: ", s)
+	// fmt.Println("Sending: ", s)
 	t.CheckErr(t.connection.SetWriteDeadline(time.Now().Add(timeout)))
 	buf := make([]byte, len(s)+1)
 	copy(buf, s)

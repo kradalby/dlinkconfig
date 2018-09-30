@@ -25,13 +25,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var (
-	host       string
-	telnetPort int
-	user       string
-	privileged bool
-)
-
 // dhcpAutoCmd represents the dhcpAuto command
 var dhcpAutoCmd = &cobra.Command{
 	Use:   "dhcpAuto",
@@ -40,7 +33,7 @@ var dhcpAutoCmd = &cobra.Command{
 
 	Run: func(cmd *cobra.Command, args []string) {
 
-		dlink.ConfigLoop(host, telnetPort, user, privileged)
+		dlink.RunConfigurationPingLoop(host, telnetPort, user, privileged, "", dlink.ConfigureDHCPAuto)
 	},
 }
 

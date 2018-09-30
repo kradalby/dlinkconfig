@@ -1,5 +1,3 @@
-// +build: !windows
-
 // Copyright © 2018 Kristoffer Dalby <kradalby@kradalby.no>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -25,35 +23,17 @@ package cmd
 import (
 	"github.com/kradalby/dlinkconfig/dlink"
 	"github.com/spf13/cobra"
-	"os"
-	"syscall"
-)
-
-var (
-	configFile string
-	switchIP   string
-	username   string
 )
 
 // configureCmd represents the configure command
 var configureCmd = &cobra.Command{
 	Use:   "configure",
-	Short: "Configure a D-Link DGS-3100 with a given configuration file",
-	Long:  `This configure modus is intended for automatic provisioning from ISC DHCP`,
+	Short: "Configure a D-Link DGS-3100 with a given config",
+	Long:  `Initiates a service that will look for D-Link DGS-3100 switches on the given IP and execute the commands in the given configuration file`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		ret, _, err := syscall.Syscall(syscall.SYS_FORK, 0, 0, 0)
-		if err != 0 {
-			panic(err)
-		}
-		switch ret {
-		case 0:
-			break
-		default:
-			os.Exit(0)
-		}
 
-		dlink.Configure(switchIP, username, configFile)
+		dlink.RunConfigurationPingLoop(host, telnetPort, user, privileged, configFile, dlink.ConfigureFromFile)
 	},
 }
 
@@ -69,10 +49,11 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// configureCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-	configureCmd.Flags().StringVarP(&configFile, "configFile", "c", "", "Switch configuration filename")
-	configureCmd.Flags().StringVarP(&switchIP, "ip", "a", "", "Switch IP address")
-	configureCmd.Flags().StringVarP(&username, "username", "u", "", "Switch username")
-	configureCmd.MarkFlagRequired("configFile")
-	configureCmd.MarkFlagRequired("ip")
-	configureCmd.MarkFlagRequired("username")
+	configureCmd.Flags().StringVarP(&host, "host", "n", "10.90.90.90", "IP of dlink switch")
+	configureCmd.Flags().IntVarP(&telnetPort, "telnetPort", "p", 23, "Telnet port")
+	configureCmd.Flags().StringVarP(&user, "user", "u", "admin", "dlink admin user")
+	configureCmd.Flags().BoolVarP(&privileged, "privileged", "s", false, "Run ping in privileged mode")
+	configureCmd.Flags().StringVarP(&configFile, "configurationFile", "f", "", "Configuration file with D-Link commands")
+	configureCmd.MarkFlagRequired("configurationFile")
+
 }

@@ -29,7 +29,14 @@ import (
 	"github.com/spf13/viper"
 )
 
-var cfgFile string
+var (
+	cfgFile    string
+	host       string
+	telnetPort int
+	user       string
+	privileged bool
+	configFile string
+)
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
