@@ -3,6 +3,7 @@ package dlink
 import (
 	"bufio"
 	"fmt"
+	"github.com/briandowns/spinner"
 	"github.com/fatih/color"
 	"github.com/sparrc/go-ping"
 	"log"
@@ -17,6 +18,8 @@ func RunConfigurationPingLoop(host string, telnetPort int, user string, privileg
 	destination := fmt.Sprintf("%s:%d", host, telnetPort)
 	timeout := time.Second * 100000
 	interval := time.Second
+	s := spinner.New(spinner.CharSets[11], 100*time.Millisecond)
+	s.Start()
 
 	pinger, err := ping.NewPinger(host)
 	if err != nil {
@@ -24,8 +27,13 @@ func RunConfigurationPingLoop(host string, telnetPort int, user string, privileg
 	}
 
 	pinger.OnRecv = func(pkt *ping.Packet) {
+		s.Stop()
 		log.Printf(color.BlueString("Host %s found, starting configuration\n"), pkt.IPAddr)
 		confFunc(destination, user, configFile)
+	}
+
+	pinger.OnFinish = func(stats *ping.Statistics) {
+		s.Start()
 	}
 
 	pinger.Interval = interval

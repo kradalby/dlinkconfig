@@ -1,3 +1,5 @@
+github.com/briandowns/spinner v0.0.0-20180928220820-bbeb66ec3653 h1:MzEiPrll6FvfAL4kQy1mU+VNJmeuTaXcbt/0isLJ9xI=
+github.com/briandowns/spinner v0.0.0-20180928220820-bbeb66ec3653/go.mod h1:hw/JEQBIE+c/BLI4aKM8UU8v+ZqrD3h7HC27kKt8JQU=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/fatih/color v1.7.0 h1:DkWD4oS2D8LGGgTQ6IvwJJXSL5Vp2ffcQg58nFV38Ys=
