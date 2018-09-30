@@ -20,8 +20,13 @@
 
 package main
 
-import "github.com/kradalby/dlinkconfig/cmd"
+import (
+	"github.com/fatih/color"
+	"github.com/kradalby/dlinkconfig/cmd"
+	"log"
+)
 
 func main() {
+	log.SetOutput(color.Output)
 	cmd.Execute()
 }
