@@ -45,8 +45,8 @@ func ConfigureFromFile(destination string, user string, configFile string) {
 	err = EnterConfigFile(t, configFile)
 	WriteConfig(t)
 	Reboot(t)
-	log.Println(color.BlueString("Please disconnect and move on to the next switch"))
-	time.Sleep(time.Second * 30)
+	log.Println(color.RedString("Please disconnect and move on to the next switch"))
+	time.Sleep(time.Second * 8)
 	log.Println(color.MagentaString("Looking for new switch..."))
 
 	// data, err = t.ReadBytes('>')
@@ -89,7 +89,7 @@ func EnterConfigFile(t *Telnet, configFile string) error {
 	}
 
 	log.Println("Configuration entered successfully")
-	time.Sleep(time.Second * 10)
+	time.Sleep(time.Second * 5)
 	return nil
 }
 
