@@ -5,7 +5,9 @@ import (
 	// "os"
 	"time"
 
+	"github.com/fatih/color"
 	"github.com/ziutek/telnet"
+	"log"
 )
 
 const timeout = 30 * time.Second
@@ -80,11 +82,17 @@ func (t *Telnet) SendlnWithError(s string) error {
 }
 
 func (t *Telnet) Expect(s string) {
-	_ = t.ExpectWithError(s)
+	err := t.ExpectWithError(s)
+	if err != nil {
+		log.Printf(color.RedString("Error: %s\n"), err)
+	}
 }
 
 func (t *Telnet) Sendln(s string) {
-	_ = t.SendlnWithError(s)
+	err := t.SendlnWithError(s)
+	if err != nil {
+		log.Printf(color.RedString("Error: %s\n"), err)
+	}
 }
 
 // func (t *Telnet) retryableExpect(count int, d ...string) {
