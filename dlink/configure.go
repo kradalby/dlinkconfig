@@ -101,8 +101,21 @@ func EnterConfigFile(t *Telnet, user string, configFile string) error {
 			}
 
 			Login(t, user)
+			continue
 		}
 
+		err = t.ExpectWithError("Success")
+		if err != nil {
+			log.Printf(color.RedString("Error: %s\n"), err)
+			log.Println(color.BlueString("Reconnecting..."))
+
+			err := t.Reconnect()
+			if err != nil {
+				return err
+			}
+
+			Login(t, user)
+		}
 		err = t.ExpectWithError("DGS-3100# ")
 		if err != nil {
 			log.Printf(color.RedString("Error: %s\n"), err)
@@ -115,6 +128,7 @@ func EnterConfigFile(t *Telnet, user string, configFile string) error {
 
 			Login(t, user)
 		}
+
 	}
 
 	if err := scanner.Err(); err != nil {

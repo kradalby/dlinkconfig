@@ -30,6 +30,7 @@ import (
 )
 
 var (
+	DEBUG      bool
 	cfgFile    string
 	host       string
 	telnetPort int
@@ -67,6 +68,7 @@ func init() {
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	rootCmd.PersistentFlags().BoolVarP(&DEBUG, "debug", "d", false, "Activate debug mode")
 }
 
 // initConfig reads in config file and ENV variables if set.

@@ -17,6 +17,12 @@ type Telnet struct {
 	destination string
 }
 
+var DEBUG bool = false
+
+func SetDebug(debug bool) {
+	DEBUG = debug
+}
+
 func NewTelnet(destination string) (*Telnet, error) {
 	t, err := telnet.Dial("tcp", destination)
 	if err != nil {
@@ -56,10 +62,16 @@ func (t *Telnet) ExpectWithError(d ...string) error {
 		return err
 	}
 
-	err = t.connection.SkipUntil(d...)
+	data, err := t.connection.ReadUntil(d...)
 	if err != nil {
 		return err
 	}
+
+	if DEBUG {
+		str := string(data)
+		log.Println("DEBUG: \n", str)
+	}
+
 	return nil
 }
 

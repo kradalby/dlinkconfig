@@ -33,6 +33,7 @@ var configureCmd = &cobra.Command{
 
 	Run: func(cmd *cobra.Command, args []string) {
 
+		dlink.SetDebug(true)
 		dlink.RunConfigurationPingLoop(host, telnetPort, user, privileged, configFile, dlink.ConfigureFromFile)
 	},
 }
