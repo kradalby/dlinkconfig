@@ -46,15 +46,17 @@ func RunConfigurationPingLoop(host string, telnetPort int, user string, privileg
 
 func ConfigureFromFile(destination string, user string, configFile string) {
 	t, err := NewTelnet(destination)
-	t.CheckErr(err)
+	if err != nil {
+		log.Fatalln(err)
+	}
 
 	// var data []byte
 	Login(t, user)
-	err = EnterConfigFile(t, configFile)
+	err = EnterConfigFile(t, user, configFile)
 	WriteConfig(t)
 	Reboot(t)
 	log.Println(color.RedString("Please disconnect and move on to the next switch"))
-	time.Sleep(time.Second * 8)
+	time.Sleep(time.Second * 20)
 	log.Println(color.MagentaString("Looking for new switch..."))
 
 	// data, err = t.ReadBytes('>')
@@ -70,7 +72,7 @@ func Login(t *Telnet, user string) {
 	log.Println(color.GreenString("Login complete"))
 }
 
-func EnterConfigFile(t *Telnet, configFile string) error {
+func EnterConfigFile(t *Telnet, user string, configFile string) error {
 	dir, err := os.Getwd()
 	if err != nil {
 		return err
@@ -88,8 +90,31 @@ func EnterConfigFile(t *Telnet, configFile string) error {
 	for scanner.Scan() {
 		command := scanner.Text()
 		log.Println(color.CyanString("Executing: "), color.MagentaString(command))
-		t.Sendln(command)
-		t.Expect("DGS-3100# ")
+		err := t.SendlnWithError(command)
+		if err != nil {
+			log.Printf(color.RedString("Error: %s\n"), err)
+			log.Println(color.BlueString("Reconnecting..."))
+
+			err := t.Reconnect()
+			if err != nil {
+				return err
+			}
+
+			Login(t, user)
+		}
+
+		err = t.ExpectWithError("DGS-3100# ")
+		if err != nil {
+			log.Printf(color.RedString("Error: %s\n"), err)
+			log.Println(color.BlueString("Reconnecting..."))
+
+			err := t.Reconnect()
+			if err != nil {
+				return err
+			}
+
+			Login(t, user)
+		}
 	}
 
 	if err := scanner.Err(); err != nil {

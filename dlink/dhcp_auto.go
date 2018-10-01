@@ -1,11 +1,15 @@
 package dlink
 
-import ()
+import (
+	"log"
+)
 
 func ConfigureDHCPAuto(destination string, user string, _ string) {
 
 	t, err := NewTelnet(destination)
-	t.CheckErr(err)
+	if err != nil {
+		log.Fatalln(err)
+	}
 
 	Login(t, user)
 	t.Sendln("config dhcp_auto enable")

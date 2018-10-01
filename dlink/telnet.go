@@ -2,7 +2,6 @@ package dlink
 
 import (
 	// "fmt"
-	"log"
 	// "os"
 	"time"
 
@@ -12,7 +11,8 @@ import (
 const timeout = 30 * time.Second
 
 type Telnet struct {
-	connection *telnet.Conn
+	connection  *telnet.Conn
+	destination string
 }
 
 func NewTelnet(destination string) (*Telnet, error) {
@@ -24,28 +24,102 @@ func NewTelnet(destination string) (*Telnet, error) {
 	t.SetUnixWriteMode(true)
 
 	return &Telnet{
-		connection: t,
+		connection:  t,
+		destination: destination,
 	}, nil
 }
 
-func (t *Telnet) CheckErr(err error) {
+// func (t *Telnet) CheckErr(err error) {
+// 	if err != nil {
+// 		log.Println("[Error]:", err)
+// 	}
+// }
+
+func (t *Telnet) Reconnect() error {
+	newT, err := telnet.Dial("tcp", t.destination)
 	if err != nil {
-		log.Println("[Error]:", err)
+		return err
 	}
+
+	newT.SetUnixWriteMode(true)
+
+	t.connection = newT
+	return nil
 }
 
-func (t *Telnet) Expect(d ...string) {
+func (t *Telnet) ExpectWithError(d ...string) error {
 	// fmt.Println("Expecting: ", d)
-	t.CheckErr(t.connection.SetReadDeadline(time.Now().Add(timeout)))
-	t.CheckErr(t.connection.SkipUntil(d...))
+	err := t.connection.SetReadDeadline(time.Now().Add(timeout))
+	if err != nil {
+		return err
+	}
+
+	err = t.connection.SkipUntil(d...)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
-func (t *Telnet) Sendln(s string) {
+func (t *Telnet) SendlnWithError(s string) error {
 	// fmt.Println("Sending: ", s)
-	t.CheckErr(t.connection.SetWriteDeadline(time.Now().Add(timeout)))
+	err := t.connection.SetWriteDeadline(time.Now().Add(timeout))
+	if err != nil {
+		return err
+	}
+
 	buf := make([]byte, len(s)+1)
 	copy(buf, s)
 	buf[len(s)] = '\n'
-	_, err := t.connection.Write(buf)
-	t.CheckErr(err)
+	_, err = t.connection.Write(buf)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
+
+func (t *Telnet) Expect(s string) {
+	_ = t.ExpectWithError(s)
+}
+
+func (t *Telnet) Sendln(s string) {
+	_ = t.SendlnWithError(s)
+}
+
+// func (t *Telnet) retryableExpect(count int, d ...string) {
+// 	err := t.Expect(d...)
+//
+// 	if err != nil {
+// 		if err == io.EOF {
+// 			log.Println("Trying to reconnect...")
+// 			t.reconnect()
+//
+// 		}
+// 		log.Println(err)
+// 		log.Println("Sleeping for: ", count)
+// 		time.Sleep(time.Second * time.Duration(count))
+// 		t.retryableExpect(count+3, d...)
+// 	}
+//
+// }
+//
+// func (t *Telnet) RetryableExpect(d ...string) {
+// 	t.retryableExpect(0, d...)
+// }
+//
+// func (t *Telnet) retryableSendln(count int, d ...string) {
+// 	err := t.Expect(d...)
+//
+// 	if err != nil {
+// 		log.Println(err)
+// 		log.Println("Sleeping for: ", count)
+// 		time.Sleep(time.Second * time.Duration(count))
+// 		t.retryableSendln(count+3, d...)
+// 	}
+//
+// }
+//
+// func (t *Telnet) RetryableSendln(d ...string) {
+// 	t.retryableSendln(0, d...)
+// }
