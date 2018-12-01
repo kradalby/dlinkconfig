@@ -10,7 +10,7 @@ import (
 	"log"
 )
 
-const timeout = 30 * time.Second
+const timeout = 5 * time.Second
 
 type Telnet struct {
 	connection  *telnet.Conn

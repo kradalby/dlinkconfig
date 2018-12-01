@@ -1,0 +1,11 @@
+enable lldp
+delete snmp community private
+delete snmp community public
+enable snmp
+create snmp community pp27 view Default read_only
+create link_aggregation group_id 1 type lacp
+config link_aggregation group_id 1 ports 47,48 state enable
+enable stp
+config stp version mstp
+config stp priority 61440 instance_id 0
+config stp ports 1:(1-46) edge true

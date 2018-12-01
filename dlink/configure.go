@@ -65,11 +65,25 @@ func ConfigureFromFile(destination string, user string, configFile string) {
 	// os.Stdout.WriteString("\n")
 }
 
-func Login(t *Telnet, user string) {
-	t.Expect("UserName:")
-	t.Sendln(user)
-	t.Expect("DGS-3100# ")
+func Login(t *Telnet, user string) error {
+	err := t.ExpectWithError("UserName:")
+	if err != nil {
+		return err
+	}
+
+	err = t.SendlnWithError(user)
+	if err != nil {
+		return err
+	}
+
+	err = t.ExpectWithError("DGS-3100# ")
+	if err != nil {
+		return err
+	}
+
 	log.Println(color.GreenString("Login complete"))
+
+	return nil
 }
 
 func EnterConfigFile(t *Telnet, user string, configFile string) error {
@@ -92,41 +106,17 @@ func EnterConfigFile(t *Telnet, user string, configFile string) error {
 		log.Println(color.CyanString("Executing: "), color.MagentaString(command))
 		err := t.SendlnWithError(command)
 		if err != nil {
-			log.Printf(color.RedString("Error: %s\n"), err)
-			log.Println(color.BlueString("Reconnecting..."))
-
-			err := t.Reconnect()
-			if err != nil {
-				return err
-			}
-
-			Login(t, user)
-			continue
+			retryOnError(t, 0, user, err)
 		}
 
 		err = t.ExpectWithError("Success")
 		if err != nil {
-			log.Printf(color.RedString("Error: %s\n"), err)
-			log.Println(color.BlueString("Reconnecting..."))
-
-			err := t.Reconnect()
-			if err != nil {
-				return err
-			}
-
-			Login(t, user)
+			retryOnError(t, 0, user, err)
 		}
+
 		err = t.ExpectWithError("DGS-3100# ")
 		if err != nil {
-			log.Printf(color.RedString("Error: %s\n"), err)
-			log.Println(color.BlueString("Reconnecting..."))
-
-			err := t.Reconnect()
-			if err != nil {
-				return err
-			}
-
-			Login(t, user)
+			retryOnError(t, 0, user, err)
 		}
 
 	}
@@ -138,6 +128,27 @@ func EnterConfigFile(t *Telnet, user string, configFile string) error {
 	log.Println("Configuration entered successfully")
 	time.Sleep(time.Second * 5)
 	return nil
+}
+
+func retryOnError(t *Telnet, count int, user string, err error) {
+	log.Printf(color.RedString("Error: %s\n"), err)
+	log.Println(color.BlueString("Reconnecting..."))
+
+	err = t.Reconnect()
+	if err != nil {
+		count = count + 3
+		log.Printf(color.BlueString("Reconnect failed, backing off for %d seconds"), count)
+		time.Sleep(time.Second * time.Duration(count))
+		retryOnError(t, count, user, err)
+	}
+
+	err = Login(t, user)
+	if err != nil {
+		count = count + 3
+		log.Printf(color.BlueString("Reconnect failed, backing off for %d seconds"), count)
+		time.Sleep(time.Second * time.Duration(count))
+		retryOnError(t, count, user, err)
+	}
 }
 
 func WriteConfig(t *Telnet) {
